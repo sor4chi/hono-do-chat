@@ -5,17 +5,13 @@ export class WebSocketDO {
   env: Env;
   client?: WebSocket;
   server?: WebSocket;
-  sessions: {
-    clientId: string;
-    webSocket: WebSocket;
-    quit?: boolean;
-  }[];
+  sessions: Map<string, WebSocket>;
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
 
-    this.sessions = [];
+    this.sessions = new Map();
   }
 
   async fetch(request: Request) {
@@ -34,52 +30,42 @@ export class WebSocketDO {
       });
     }
 
-    const clientId = Math.random().toString(36).slice(2);
-    return await this.handleWebSocketUpgrade(request, clientId);
+    return await this.handleWebSocketUpgrade(request);
   }
 
-  async handleWebSocketUpgrade(request: Request, clientId: string) {
+  async handleWebSocketUpgrade(request: Request) {
     if (request.headers.get("Upgrade") !== "websocket") {
       throw new Error(`Upgrade header not 'websocket' or not present.`);
     }
 
     const [client, server] = Object.values(new WebSocketPair());
+    const clientId = Math.random().toString(36).slice(2);
     this.client = client;
     this.server = server;
     this.server.accept();
 
-    const session = { webSocket: server, clientId };
-    this.sessions.push(session);
+    this.sessions.set(clientId, server);
 
-    server.addEventListener("message", async (msg) => {
+    server.addEventListener("message", (msg) => {
       if (typeof msg.data !== "string") return;
       const data = JSON.parse(msg.data);
-      if (data.clientId) {
-        session.clientId = data.clientId;
-      }
-      this.broadcast(JSON.stringify(data), data.clientId);
+      this.broadcast(JSON.stringify(data), clientId);
     });
 
     return new Response(null, { status: 101, webSocket: client });
   }
 
   broadcast(message: string, senderClientId?: string) {
-    this.sessions = this.sessions.filter((session) => {
-      if (session.quit) {
-        return false;
-      }
-
-      if (session.clientId === senderClientId) {
-        return true;
+    for (const [clientId, webSocket] of this.sessions.entries()) {
+      if (clientId === senderClientId) {
+        continue;
       }
 
       try {
-        session.webSocket.send(message);
-        return true;
+        webSocket.send(message);
       } catch (error) {
-        session.quit = true;
-        return false;
+        this.sessions.delete(clientId);
       }
-    });
+    }
   }
 }
