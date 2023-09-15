@@ -1,8 +1,6 @@
-import { WebSocketDO } from "./socket-do";
 import { HTML } from "./html";
 import { Env } from "./types";
 import { Hono } from "hono";
-export { WebSocketDO };
 
 const app = new Hono<{
   Bindings: Env;
@@ -26,3 +24,4 @@ app.onError((err, c) => {
 });
 
 export default app;
+export { WebSocketDO } from "./socket-do";
