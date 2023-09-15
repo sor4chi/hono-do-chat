@@ -21,9 +21,26 @@ export const HTML = /* html */ `
       const sendButton = document.getElementById('send_button');
       const textInput = document.getElementById('text_input');
 
+      async function getMessages() {
+        const res = await fetch(window.location.protocol + "//" + hostname + "/chat/messages");
+        const messages = await res.json();
+        return messages;
+      }
+
+      function insertMessage(message) {
+        const p = document.createElement("p");
+        p.innerText = message;
+        outputDiv.appendChild(p);
+      }
+
+      window.onload = async () => {
+        const messages = await getMessages();
+        messages.forEach(insertMessage);
+      }
+
       function join() {
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const ws = new WebSocket(protocol + "//" + hostname + "/websocket");
+        const ws = new WebSocket(protocol + "//" + hostname + "/chat/websocket");
         let rejoined = false;
         const startTime = Date.now();
 
@@ -32,12 +49,7 @@ export const HTML = /* html */ `
         });
 
         ws.addEventListener("message", event => {
-          const data = event.data;
-
-          // write output somewhere
-          const p = document.createElement("p");
-          p.innerText = data;
-          outputDiv.appendChild(p);
+          insertMessage(event.data)
         });
 
         ws.addEventListener("close", event => {
@@ -67,6 +79,7 @@ export const HTML = /* html */ `
 
       sendButton.addEventListener("click", event => {
         const text = textInput.value;
+        insertMessage(text)
         currentWebSocket.send(text);
         textInput.value = "";
       });

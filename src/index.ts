@@ -7,7 +7,7 @@ const app = new Hono<{
 }>();
 
 app.get("/", (c) => c.html(HTML));
-app.get("/websocket", (c) => {
+app.get("/chat/*", (c) => {
   const id = c.env.WEBSOCKETDO.idFromName("A");
   const obj = c.env.WEBSOCKETDO.get(id);
   return obj.fetch(c.req.raw);

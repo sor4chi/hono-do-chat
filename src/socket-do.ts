@@ -3,15 +3,17 @@ import { Env } from "./types";
 
 export class WebSocketDO {
   state: DurableObjectState;
-  app: Hono<{
+  app = new Hono<{
     Bindings: Env;
-  }>;
+  }>().basePath("/chat");
   sessions: Map<string, WebSocket>;
+  messages: string[];
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
+    this.messages = [];
     this.sessions = new Map();
-    this.app = new Hono();
+    this.app.get("/messages", (c) => c.json(this.messages));
     this.app.get("/websocket", async (c) => {
       if (c.req.header("Upgrade") === "websocket") {
         return await this.handleWebSocketUpgrade();
@@ -33,6 +35,7 @@ export class WebSocketDO {
 
     server.addEventListener("message", (msg) => {
       if (typeof msg.data !== "string") return;
+      this.messages.push(msg.data);
       this.broadcast(msg.data, clientId);
     });
 
