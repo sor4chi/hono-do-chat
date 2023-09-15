@@ -1,3 +1,3 @@
-export interface Env {
+export type Env = {
   WEBSOCKETDO: DurableObjectNamespace;
-}
+};
