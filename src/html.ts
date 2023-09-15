@@ -28,7 +28,6 @@ export const HTML = /* html */ `
         const startTime = Date.now();
 
         ws.addEventListener("open", event => {
-          console.log("OPENED")
           currentWebSocket = ws;
         });
 

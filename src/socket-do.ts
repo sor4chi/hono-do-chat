@@ -3,8 +3,6 @@ import { Env } from "./types";
 export class WebSocketDO {
   state: DurableObjectState;
   env: Env;
-  client?: WebSocket;
-  server?: WebSocket;
   sessions: Map<string, WebSocket>;
 
   constructor(state: DurableObjectState, env: Env) {
@@ -40,9 +38,7 @@ export class WebSocketDO {
 
     const [client, server] = Object.values(new WebSocketPair());
     const clientId = Math.random().toString(36).slice(2);
-    this.client = client;
-    this.server = server;
-    this.server.accept();
+    server.accept();
 
     this.sessions.set(clientId, server);
 
@@ -61,7 +57,6 @@ export class WebSocketDO {
       }
 
       try {
-        console.log("sending message to", clientId);
         webSocket.send(message);
       } catch (error) {
         this.sessions.delete(clientId);
