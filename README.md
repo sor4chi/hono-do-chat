@@ -1,4 +1,6 @@
-# So Simple Usage of Durable Object + Websocket
+# so simple usage of Durable Object + Hono
+
+Multi client chat app using Durable Object (WebSocket).
 
 1. Create a Durable Object Namespace
 
@@ -21,11 +23,11 @@ new_classes = ["WebSocketDO"]
 2. Install dependencies
 
 ```
-npm install
-npm run dev
+bun install
+bun dev
 ```
 
 3. Deploy
 ```
-npm run deploy
+bun run deploy
 ```
