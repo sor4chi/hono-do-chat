@@ -48,8 +48,7 @@ export class WebSocketDO {
 
     server.addEventListener("message", (msg) => {
       if (typeof msg.data !== "string") return;
-      const data = JSON.parse(msg.data);
-      this.broadcast(JSON.stringify(data), clientId);
+      this.broadcast(msg.data, clientId);
     });
 
     return new Response(null, { status: 101, webSocket: client });
@@ -62,6 +61,7 @@ export class WebSocketDO {
       }
 
       try {
+        console.log("sending message to", clientId);
         webSocket.send(message);
       } catch (error) {
         this.sessions.delete(clientId);

@@ -21,6 +21,7 @@ async function handleErrors(request: Request, func: () => Promise<Response>) {
 
 async function handleRequest(request: Request, env: Env) {
   const path = new URL(request.url).pathname;
+  console.log("path", path);
 
   if (path === "/") {
     return new Response(HTML, {

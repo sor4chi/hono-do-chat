@@ -1,7 +1,6 @@
 export const HTML = /* html */ `
 <!DOCTYPE html>
   <body>
-    <h1>Cloudflare Workers DurableObject Basic WebSockets</h1>
     <input type="text" id="text_input" /><br/>
     <button id="send_button">Send</button> <br/>
     <div id="output_div"></div>
@@ -69,8 +68,7 @@ export const HTML = /* html */ `
 
       sendButton.addEventListener("click", event => {
         const text = textInput.value;
-        const data = { text, clientId };
-        currentWebSocket.send(JSON.stringify(data));
+        currentWebSocket.send(text);
         textInput.value = "";
       });
 
