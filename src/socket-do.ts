@@ -1,41 +1,30 @@
+import { Hono } from "hono";
 import { Env } from "./types";
 
 export class WebSocketDO {
   state: DurableObjectState;
-  env: Env;
+  app: Hono<{
+    Bindings: Env;
+  }>;
   sessions: Map<string, WebSocket>;
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
-    this.env = env;
-
     this.sessions = new Map();
+    this.app = new Hono();
+    this.app.get("/websocket", async (c) => {
+      if (c.req.header("Upgrade") === "websocket") {
+        return await this.handleWebSocketUpgrade();
+      }
+      return c.text("Not found", 404);
+    });
   }
 
-  async fetch(request: Request) {
-    const path = new URL(request.url).pathname;
-
-    if (
-      path !== "/websocket" ||
-      request.headers.get("Upgrade") !== "websocket"
-    ) {
-      return new Response("Not found", {
-        status: 404,
-        headers: {
-          pathname: path,
-          upgrade: request.headers.get("Upgrade") || "",
-        },
-      });
-    }
-
-    return await this.handleWebSocketUpgrade(request);
+  fetch(request: Request) {
+    return this.app.fetch(request);
   }
 
-  async handleWebSocketUpgrade(request: Request) {
-    if (request.headers.get("Upgrade") !== "websocket") {
-      throw new Error(`Upgrade header not 'websocket' or not present.`);
-    }
-
+  async handleWebSocketUpgrade() {
     const [client, server] = Object.values(new WebSocketPair());
     const clientId = Math.random().toString(36).slice(2);
     server.accept();
