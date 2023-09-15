@@ -7,7 +7,10 @@ export class WebSocketDO {
     Bindings: Env;
   }>().basePath("/chat");
   sessions: Map<string, WebSocket>;
-  messages: string[];
+  messages: {
+    timestamp: string;
+    text: string;
+  }[];
 
   constructor(state: DurableObjectState, env: Env) {
     this.state = state;
@@ -35,7 +38,7 @@ export class WebSocketDO {
 
     server.addEventListener("message", (msg) => {
       if (typeof msg.data !== "string") return;
-      this.messages.push(msg.data);
+      this.messages.push(JSON.parse(msg.data));
       this.broadcast(msg.data, clientId);
     });
 

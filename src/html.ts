@@ -28,8 +28,11 @@ export const HTML = /* html */ `
       }
 
       function insertMessage(message) {
+        const span = document.createElement("span");
+        span.innerText = message.timestamp + ": ";
         const p = document.createElement("p");
-        p.innerText = message;
+        p.innerText = message.text;
+        p.prepend(span);
         outputDiv.appendChild(p);
       }
 
@@ -49,7 +52,7 @@ export const HTML = /* html */ `
         });
 
         ws.addEventListener("message", event => {
-          insertMessage(event.data)
+          insertMessage(JSON.parse(event.data));
         });
 
         ws.addEventListener("close", event => {
@@ -79,8 +82,10 @@ export const HTML = /* html */ `
 
       sendButton.addEventListener("click", event => {
         const text = textInput.value;
-        insertMessage(text)
-        currentWebSocket.send(text);
+        const now = new Date().toLocaleString("en-US", { hour: "numeric", minute: "numeric", hour12: true });
+        const message = { text, timestamp: now };
+        insertMessage(message);
+        currentWebSocket.send(JSON.stringify(message));
         textInput.value = "";
       });
 
